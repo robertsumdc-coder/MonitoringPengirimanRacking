@@ -1,0 +1,3827 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoring Delivery Rack DDR - AHI Sidoarjo</title>
+  <meta name="description" content="Dashboard monitoring logistik dan pengiriman Delivery Rack DDR - AHI Sidoarjo dari Google Sheets secara real-time." />
+  <meta property="og:title" content="Monitoring Delivery Rack DDR - AHI Sidoarjo" />
+  <meta property="og:description" content="Dashboard monitoring logistik dan pengiriman Delivery Rack DDR - AHI Sidoarjo dari Google Sheets secara real-time." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Light Theme (Corporate Enterprise) */
+      --bg-body: #f8fafc;
+      --bg-sidebar: #0f172a;
+      --bg-sidebar-hover: #1e293b;
+      --bg-sidebar-active: #e82800;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #f1f5f9;
+      --bg-card: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-focus: #e82800;
+
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --text-inverse: #ffffff;
+
+      --primary: #e82800;
+      --primary-hover: #cc2300;
+      --primary-light: #fef2f2;
+
+      --accent-teal: #0d9488;
+      --accent-blue: #2563eb;
+      --accent-indigo: #4f46e5;
+
+      /* Status Semantics */
+      --status-completed: #16a34a;
+      --status-completed-bg: #f0fdf4;
+      --status-arrived: #0891b2;
+      --status-arrived-bg: #ecfeff;
+      --status-transit: #2563eb;
+      --status-transit-bg: #eff6ff;
+      --status-assigned: #6366f1;
+      --status-assigned-bg: #eef2ff;
+      --status-waiting: #d97706;
+      --status-waiting-bg: #fffbeb;
+      --status-unscheduled: #64748b;
+      --status-unscheduled-bg: #f8fafc;
+      --status-overdue: #dc2626;
+      --status-overdue-bg: #fef2f2;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: #0b1120;
+      --bg-sidebar: #070d19;
+      --bg-sidebar-hover: #131e34;
+      --bg-sidebar-active: #e82800;
+      --bg-surface: #111a2e;
+      --bg-surface-alt: #17233c;
+      --bg-card: #111a2e;
+      --border-subtle: #1e2c48;
+      --border-focus: #ef4444;
+
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --text-inverse: #ffffff;
+
+      --primary: #ef4444;
+      --primary-hover: #f87171;
+      --primary-light: rgba(239, 68, 68, 0.15);
+
+      --status-completed: #22c55e;
+      --status-completed-bg: rgba(34, 197, 94, 0.15);
+      --status-arrived: #06b6d4;
+      --status-arrived-bg: rgba(6, 182, 212, 0.15);
+      --status-transit: #3b82f6;
+      --status-transit-bg: rgba(59, 130, 246, 0.15);
+      --status-assigned: #818cf8;
+      --status-assigned-bg: rgba(129, 140, 248, 0.15);
+      --status-waiting: #f59e0b;
+      --status-waiting-bg: rgba(245, 158, 11, 0.15);
+      --status-unscheduled: #94a3b8;
+      --status-unscheduled-bg: rgba(148, 163, 184, 0.15);
+      --status-overdue: #ef4444;
+      --status-overdue-bg: rgba(239, 68, 68, 0.15);
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.5;
+      font-size: 14px;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* ============================================================
+       AZKO SPLASH SCREEN & SHINING RED GLEAMING LINES
+       ============================================================ */
+    .azko-splash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: radial-gradient(ellipse at 50% 35%, #2a0808 0%, #120406 55%, #050203 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+      cursor: pointer;
+    }
+
+    .azko-splash-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    /* Ambient cyber-lines grid background */
+    .azko-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(232, 40, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(232, 40, 0, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .azko-glow-orb {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232, 40, 0, 0.28) 0%, rgba(220, 38, 38, 0.08) 50%, transparent 70%);
+      filter: blur(55px);
+      pointer-events: none;
+      animation: azko-orb-pulse 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes azko-orb-pulse {
+      0% { transform: scale(0.9) translate(-15px, -10px); opacity: 0.65; }
+      100% { transform: scale(1.15) translate(15px, 10px); opacity: 0.95; }
+    }
+
+    .azko-splash-box {
+      position: relative;
+      width: 100%;
+      max-width: 580px;
+      background: rgba(18, 6, 8, 0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(232, 40, 0, 0.35);
+      border-radius: 24px;
+      padding: 40px 36px 32px;
+      box-shadow: 
+        0 25px 60px -15px rgba(0, 0, 0, 0.85),
+        0 0 50px rgba(232, 40, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      z-index: 10;
+      text-align: center;
+      cursor: default;
+    }
+
+    /* RED AZKO LOGO DISPLAY STAGE */
+    .azko-red-stage {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      height: 140px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: radial-gradient(circle at center, rgba(45, 10, 10, 0.75) 0%, rgba(12, 3, 5, 0.95) 85%);
+      border: 1px solid rgba(232, 40, 0, 0.45);
+      box-shadow: 
+        0 0 35px rgba(232, 40, 0, 0.35),
+        inset 0 0 25px rgba(232, 40, 0, 0.15);
+      overflow: hidden;
+      padding: 20px 24px;
+    }
+
+    /* Authentic SVG Vector Logo (Color: #e82800 Red) */
+    .azko-svg-red {
+      width: 100%;
+      height: 100%;
+      max-height: 95px;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 0 16px rgba(232, 40, 0, 0.85));
+    }
+
+    /* 1. Diagonal Shining Shimmer Beam (Garis Berkilat Menyapu Lebar) */
+    .azko-shimmer-sweep {
+      position: absolute;
+      top: -70%;
+      left: -130%;
+      width: 75%;
+      height: 240%;
+      background: linear-gradient(
+        110deg,
+        transparent 15%,
+        rgba(255, 255, 255, 0.1) 30%,
+        rgba(255, 120, 100, 0.65) 45%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 150, 140, 0.75) 55%,
+        rgba(255, 255, 255, 0.1) 70%,
+        transparent 85%
+      );
+      transform: rotate(26deg);
+      z-index: 4;
+      pointer-events: none;
+      animation: azko-sweep-beam 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      mix-blend-mode: screen;
+    }
+
+    /* 2. Secondary Thin Sharp Gleam Laser (Garis Berkilat Tajam Cepat) */
+    .azko-gleam-laser {
+      position: absolute;
+      top: -50%;
+      left: -110%;
+      width: 12%;
+      height: 220%;
+      background: linear-gradient(
+        115deg,
+        transparent 0%,
+        rgba(255, 255, 255, 1) 50%,
+        transparent 100%
+      );
+      transform: rotate(26deg);
+      z-index: 5;
+      pointer-events: none;
+      animation: azko-sweep-beam 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.28s;
+      mix-blend-mode: overlay;
+    }
+
+    /* 3. Horizontal Gleaming Electric Red Streaks (Garis Laser Merah-Putih Horizontal) */
+    .azko-streak-line-1 {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(232, 40, 0, 0.9) 25%, #ffffff 50%, rgba(232, 40, 0, 0.9) 75%, transparent 100%);
+      box-shadow: 0 0 12px #ff3311, 0 0 24px #e82800;
+      z-index: 6;
+      pointer-events: none;
+      animation: azko-streak-horizontal 3.2s ease-in-out infinite;
+    }
+
+    .azko-streak-line-2 {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 75, 43, 0.8) 30%, #ffffff 50%, rgba(255, 75, 43, 0.8) 70%, transparent 100%);
+      box-shadow: 0 0 10px #ff3311;
+      z-index: 6;
+      pointer-events: none;
+      animation: azko-streak-horizontal 3.2s ease-in-out infinite 1.6s;
+    }
+
+    /* 4. Sparkling Star Flares (Kilatan Bintang Berkilau pada Sudut Huruf a, z, ., k, o) */
+    .azko-flare {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      z-index: 7;
+      pointer-events: none;
+      animation: azko-flare-sparkle 2.3s ease-in-out infinite;
+    }
+
+    .azko-flare::before, .azko-flare::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      box-shadow: 0 0 8px #ff4d2e, 0 0 18px #e82800;
+      border-radius: 9999px;
+    }
+
+    .azko-flare::before { width: 100%; height: 2px; }
+    .azko-flare::after { width: 2px; height: 100%; }
+
+    .flare-a { top: 22%; left: 18%; animation-delay: 0.1s; }
+    .flare-z { bottom: 24%; left: 34%; animation-delay: 0.7s; }
+    .flare-dot { top: 48%; left: 50%; animation-delay: 1.3s; }
+    .flare-k { top: 24%; right: 30%; animation-delay: 1.8s; }
+    .flare-o { bottom: 26%; right: 14%; animation-delay: 2.2s; }
+
+    @keyframes azko-sweep-beam {
+      0% { left: -130%; opacity: 0; }
+      12% { opacity: 1; }
+      55% { left: 160%; opacity: 1; }
+      56% { opacity: 0; }
+      100% { left: 160%; opacity: 0; }
+    }
+
+    @keyframes azko-streak-horizontal {
+      0% { top: 18%; opacity: 0; }
+      20% { opacity: 1; }
+      50% { top: 78%; opacity: 0.9; }
+      80% { opacity: 1; }
+      100% { top: 18%; opacity: 0; }
+    }
+
+    @keyframes azko-flare-sparkle {
+      0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+      35% { transform: scale(1.4) rotate(90deg); opacity: 1; }
+      50% { transform: scale(1) rotate(135deg); opacity: 0.85; }
+      75% { transform: scale(0.2) rotate(180deg); opacity: 0.2; }
+    }
+
+    /* Splash Screen Typography */
+    .splash-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .splash-subtitle {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .splash-subtitle strong {
+      color: #ff4d2e;
+      font-weight: 700;
+    }
+
+    /* Red Progress Pulse Line */
+    .splash-progress-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .splash-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff3311, #e82800, #ff6b4a);
+      box-shadow: 0 0 10px #e82800;
+      border-radius: var(--radius-full);
+      animation: progress-fill 2.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes progress-fill {
+      0% { width: 5%; }
+      40% { width: 65%; }
+      80% { width: 92%; }
+      100% { width: 100%; }
+    }
+
+    .splash-status-text {
+      font-size: 11px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    /* Big Red Enter Button */
+    .btn-enter-dashboard {
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: linear-gradient(135deg, #e82800 0%, #b81c00 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(232, 40, 0, 0.45);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-enter-dashboard:hover {
+      background: linear-gradient(135deg, #ff370f 0%, #cc2300 100%);
+      box-shadow: 0 6px 24px rgba(232, 40, 0, 0.65);
+      transform: translateY(-1px);
+    }
+
+    .btn-enter-dashboard::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -100%;
+      width: 50%;
+      height: 200%;
+      background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45), transparent);
+      transform: rotate(25deg);
+      transition: left 0.75s ease;
+    }
+
+    .btn-enter-dashboard:hover::before {
+      left: 150%;
+    }
+
+    /* Layout */
+    #sidebar {
+      width: 260px;
+      background-color: var(--bg-sidebar);
+      color: #94a3b8;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 40;
+      transition: transform 0.25s ease;
+    }
+
+    #main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Sidebar Brand Section with RED az.ko logo */
+    .brand-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .brand-section:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .brand-azko-badge {
+      width: 54px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: #150608;
+      border: 1px solid rgba(232, 40, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(232, 40, 0, 0.25);
+    }
+
+    .brand-azko-badge svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .brand-text h1 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 10px;
+      color: #e82800;
+      font-weight: 700;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 12px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      color: #94a3b8;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--bg-sidebar-hover);
+      color: #f1f5f9;
+    }
+
+    .nav-item.active {
+      background-color: var(--primary);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .nav-badge.danger {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      color: #475569;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-footer .route-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* Header Bar */
+    header.top-header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .menu-toggle-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .header-title-box h2 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-transform: capitalize;
+    }
+
+    .header-title-box p {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .update-indicator {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background-color: var(--bg-surface);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--bg-surface-alt);
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-icon:hover {
+      background-color: var(--bg-surface-alt);
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .kpi-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* KPI Color Variations */
+    .kpi-red .kpi-icon { background: rgba(232, 40, 0, 0.12); color: #e82800; }
+    .kpi-blue .kpi-icon { background: var(--status-transit-bg); color: var(--status-transit); }
+    .kpi-amber .kpi-icon { background: var(--status-waiting-bg); color: var(--status-waiting); }
+    .kpi-indigo .kpi-icon { background: var(--status-assigned-bg); color: var(--status-assigned); }
+    .kpi-cyan .kpi-icon { background: var(--status-arrived-bg); color: var(--status-arrived); }
+    .kpi-emerald .kpi-icon { background: var(--status-completed-bg); color: var(--status-completed); }
+    .kpi-rose .kpi-icon { background: var(--status-overdue-bg); color: var(--status-overdue); }
+    .kpi-rose .kpi-value { color: var(--status-overdue); }
+    .kpi-teal .kpi-icon { background: rgba(13, 148, 136, 0.12); color: var(--accent-teal); }
+
+    /* Funnel / Pipeline Component */
+    .pipeline-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      position: relative;
+    }
+
+    .pipeline-step {
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+      position: relative;
+      transition: background 0.2s ease;
+    }
+
+    .pipeline-step.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .pipeline-step-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+
+    .pipeline-step-count {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .pipeline-step-pct {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .pipeline-arrow {
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      color: var(--text-subtle);
+      background: var(--bg-card);
+      border-radius: var(--radius-full);
+      padding: 2px;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .chart-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-span-4 { grid-column: span 4; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-8 { grid-column: span 8; }
+    .col-span-12 { grid-column: span 12; }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .chart-canvas-wrapper {
+      position: relative;
+      flex: 1;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(2px);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px;
+      z-index: 5;
+    }
+
+    [data-theme="dark"] .empty-state {
+      background: rgba(17, 26, 46, 0.85);
+    }
+
+    .empty-state svg {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 8px;
+      color: var(--text-subtle);
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .empty-state span {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+    }
+
+    /* Panels Split (Jadwal & Perlu Tindakan) */
+    .panels-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .panel-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .schedule-item:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .schedule-date-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .date-badge {
+      padding: 6px 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      min-width: 52px;
+    }
+
+    .date-badge-day {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .date-badge-month {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .schedule-details h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .schedule-details p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .action-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px 14px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s ease;
+    }
+
+    .action-item:hover {
+      border-color: var(--status-waiting);
+    }
+
+    .action-item.urgent {
+      border-color: var(--status-overdue);
+      background: var(--status-overdue-bg);
+    }
+
+    .action-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .action-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pic-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pic-site { background: #e0f2fe; color: #0284c7; }
+    .pic-vm { background: #fef3c7; color: #b45309; }
+    .pic-gii { background: #f3e8ff; color: #7e22ce; }
+
+    [data-theme="dark"] .pic-site { background: rgba(2, 132, 199, 0.2); color: #38bdf8; }
+    [data-theme="dark"] .pic-vm { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    [data-theme="dark"] .pic-gii { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+    /* Interactive Table Section */
+    .table-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-toolbar {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-surface);
+    }
+
+    .toolbar-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-box svg {
+      position: absolute;
+      left: 10px;
+      color: var(--text-subtle);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      padding: 7px 12px 7px 34px;
+      font-size: 13px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface-alt);
+      color: var(--text-main);
+      width: 210px;
+      transition: all 0.15s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      background-color: var(--bg-surface);
+      width: 250px;
+    }
+
+    .filter-select, .date-filter-input {
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface-alt);
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .filter-select:focus, .date-filter-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      max-height: 600px;
+      position: relative;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    table.data-table th {
+      background-color: var(--bg-surface-alt);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    table.data-table th:hover {
+      color: var(--text-main);
+      background-color: var(--border-subtle);
+    }
+
+    table.data-table th.no-sort {
+      cursor: default;
+    }
+
+    table.data-table th .th-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    table.data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      white-space: nowrap;
+      transition: background-color 0.1s ease;
+    }
+
+    table.data-table tr:hover td {
+      background-color: rgba(232, 40, 0, 0.04);
+      cursor: pointer;
+    }
+
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-badge.completed { background: var(--status-completed-bg); color: var(--status-completed); }
+    .status-badge.arrived { background: var(--status-arrived-bg); color: var(--status-arrived); }
+    .status-badge.in_transit { background: var(--status-transit-bg); color: var(--status-transit); }
+    .status-badge.armada_assigned { background: var(--status-assigned-bg); color: var(--status-assigned); }
+    .status-badge.time_pickup, .status-badge.waiting_assignment { background: var(--status-waiting-bg); color: var(--status-waiting); }
+    .status-badge.unscheduled { background: var(--status-unscheduled-bg); color: var(--status-unscheduled); }
+
+    .tag-overdue {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    .link-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: var(--primary-light);
+      font-size: 11px;
+    }
+
+    .link-btn:hover {
+      text-decoration: underline;
+    }
+
+    .table-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Modal Detail View */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 680px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transform: scale(0.96);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .modal-backdrop.open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface-alt);
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-main);
+      background: var(--border-subtle);
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Modal Progress Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border-subtle);
+    }
+
+    .timeline-node {
+      position: relative;
+    }
+
+    .timeline-indicator {
+      position: absolute;
+      left: -28px;
+      top: 2px;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface-alt);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 11px;
+      z-index: 2;
+    }
+
+    .timeline-node.done .timeline-indicator {
+      background: var(--status-completed);
+      border-color: var(--status-completed);
+      color: #ffffff;
+    }
+
+    .timeline-node.current .timeline-indicator {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .timeline-content {
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+    }
+
+    .timeline-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .timeline-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .timeline-detail {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .modal-field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-subtle);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .modal-field span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Error banner */
+    .error-banner {
+      background: var(--status-overdue-bg);
+      border: 1px solid var(--status-overdue);
+      color: var(--status-overdue);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .error-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .col-span-8, .col-span-4, .col-span-6 { grid-column: span 12; }
+      .panels-grid { grid-template-columns: 1fr; }
+      .pipeline-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      .menu-toggle-btn {
+        display: inline-flex;
+      }
+      header.top-header {
+        padding: 12px 16px;
+      }
+      .content-area {
+        padding: 16px;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .pipeline-grid {
+        grid-template-columns: 1fr;
+      }
+      .pipeline-arrow {
+        display: none;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      #sidebar, .top-header, .table-toolbar, .table-footer, .btn, .search-input-box, .azko-splash-overlay {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      #main-wrapper {
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .content-area {
+        padding: 0 !important;
+      }
+      .kpi-card, .chart-box, .table-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       AZKO ENTRANCE SPLASH SCREEN WITH SHINING RED GLEAMING LINES
+       (Form login telah dihapus, langsung fokus ke Logo az.ko merah berkilat)
+       ============================================================ -->
+  <div id="azko-splash-screen" class="azko-splash-overlay">
+    <div class="azko-grid-bg"></div>
+    <div class="azko-glow-orb"></div>
+
+    <div class="azko-splash-box" onclick="event.stopPropagation();">
+      
+      <!-- RED AZKO (az.ko) LOGO STAGE WITH SHINING LINES -->
+      <div class="azko-red-stage" title="Logo az.ko - PT Aspirasi Hidup Indonesia Tbk">
+        <!-- Authentic Red az.ko Vector Logo (#e82800) -->
+        <svg class="azko-svg-red" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 891.15 190">
+          <defs>
+            <linearGradient id="azkoRedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ff3b14" />
+              <stop offset="45%" stop-color="#e82800" />
+              <stop offset="100%" stop-color="#d61f00" />
+            </linearGradient>
+            <filter id="azkoRedGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#ff3311" flood-opacity="0.65"/>
+            </filter>
+          </defs>
+          <g filter="url(#azkoRedGlow)">
+            <!-- letter 'a' -->
+            <path fill="url(#azkoRedGrad)" d="M143.61,2.73l-4.17,12.56C125.31,5.72,108.49.16,90.42.16,40.49.16,0,42.62,0,95s40.49,94.83,90.42,94.83c18.07,0,34.89-5.56,49.02-15.13l4.17,12.56h46.13V2.73h-46.13ZM139.33,105.74c-4.83,20.09-22.92,35.01-44.49,35.01-25.27,0-45.76-20.48-45.76-45.75s20.49-45.76,45.76-45.76c21.57,0,39.66,14.93,44.49,35.02.83,3.44,1.27,7.04,1.27,10.74s-.44,7.3-1.27,10.74Z"/>
+            <!-- letter 'z' -->
+            <polygon fill="url(#azkoRedGrad)" points="381.52 144.47 381.52 186.65 219.4 186.65 219.4 159.63 303.75 45.29 222.69 45.29 222.69 3.11 377.57 3.11 377.57 30.13 294.06 144.47 381.52 144.47"/>
+            <!-- dot '.' in az.ko -->
+            <circle fill="url(#azkoRedGrad)" cx="445.15" cy="94.8" r="45.95"/>
+            <!-- letter 'k' -->
+            <polygon fill="url(#azkoRedGrad)" points="711.69 186.7 643.91 186.7 573.52 113.62 573.52 186.7 524.08 186.7 524.08 3.3 573.52 3.3 573.52 76.25 639.67 3.3 704.12 3.3 621.23 94.8 711.69 186.7"/>
+            <!-- letter 'o' -->
+            <path fill="url(#azkoRedGrad)" d="M796.15,0c-52.47,0-95,42.53-95,95s42.53,95,95,95,95-42.54,95-95S848.62,0,796.15,0ZM796.15,140.75c-25.27,0-45.75-20.48-45.75-45.75s20.48-45.76,45.75-45.76,45.76,20.49,45.76,45.76-20.49,45.75-45.76,45.75Z"/>
+          </g>
+        </svg>
+
+        <!-- 1. Diagonal Shining Shimmer Beam -->
+        <div class="azko-shimmer-sweep"></div>
+        
+        <!-- 2. Sharp Gleam Laser -->
+        <div class="azko-gleam-laser"></div>
+
+        <!-- 3. Horizontal Gleaming Electric Red Streaks -->
+        <div class="azko-streak-line-1"></div>
+        <div class="azko-streak-line-2"></div>
+
+        <!-- 4. Glistening Star Flares at Key Letters -->
+        <div class="azko-flare flare-a" title="Gleam a"></div>
+        <div class="azko-flare flare-z" title="Gleam z"></div>
+        <div class="azko-flare flare-dot" title="Gleam dot"></div>
+        <div class="azko-flare flare-k" title="Gleam k"></div>
+        <div class="azko-flare flare-o" title="Gleam o"></div>
+      </div>
+
+      <div class="splash-title">Monitoring Delivery Rack DDR</div>
+      <div class="splash-subtitle">
+        <span>AHI SIDOARJO</span>
+        <span>&bull;</span>
+        <strong>PT ASPIRASI HIDUP INDONESIA TBK</strong>
+      </div>
+
+      <!-- Red Progress Loading Bar -->
+      <div class="splash-progress-track">
+        <div class="splash-progress-bar"></div>
+      </div>
+      <div class="splash-status-text">
+        <span>Sinkronisasi Data Google Sheets...</span>
+        <span id="splash-countdown">Masuk otomatis dalam 3 detik</span>
+      </div>
+
+      <!-- Action Button to Enter Dashboard -->
+      <button type="button" id="btn-enter-dash" class="btn-enter-dashboard">
+        <span>Buka Dashboard Monitoring</span>
+        <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside id="sidebar">
+    <div class="brand-section" id="btn-sidebar-brand" title="az.ko - PT Aspirasi Hidup Indonesia Tbk">
+      <div class="brand-azko-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 891.15 190">
+          <path fill="#e82800" d="M143.61,2.73l-4.17,12.56C125.31,5.72,108.49.16,90.42.16,40.49.16,0,42.62,0,95s40.49,94.83,90.42,94.83c18.07,0,34.89-5.56,49.02-15.13l4.17,12.56h46.13V2.73h-46.13ZM139.33,105.74c-4.83,20.09-22.92,35.01-44.49,35.01-25.27,0-45.76-20.48-45.76-45.75s20.49-45.76,45.76-45.76c21.57,0,39.66,14.93,44.49,35.02.83,3.44,1.27,7.04,1.27,10.74s-.44,7.3-1.27,10.74Z"/>
+          <polygon fill="#e82800" points="381.52 144.47 381.52 186.65 219.4 186.65 219.4 159.63 303.75 45.29 222.69 45.29 222.69 3.11 377.57 3.11 377.57 30.13 294.06 144.47 381.52 144.47"/>
+          <circle fill="#e82800" cx="445.15" cy="94.8" r="45.95"/>
+          <polygon fill="#e82800" points="711.69 186.7 643.91 186.7 573.52 113.62 573.52 186.7 524.08 186.7 524.08 3.3 573.52 3.3 573.52 76.25 639.67 3.3 704.12 3.3 621.23 94.8 711.69 186.7"/>
+          <path fill="#e82800" d="M796.15,0c-52.47,0-95,42.53-95,95s42.53,95,95,95,95-42.54,95-95S848.62,0,796.15,0ZM796.15,140.75c-25.27,0-45.75-20.48-45.75-45.75s20.48-45.76,45.75-45.76,45.76,20.49,45.76,45.76-20.49,45.75-45.76,45.75Z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Delivery Rack DDR</h1>
+        <p>AHI Sidoarjo Logistik</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Navigasi Utama</div>
+      <button class="nav-item active" data-target="section-overview">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Ringkasan (Overview)</span>
+      </button>
+
+      <button class="nav-item" data-target="section-shipments">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+        <span>Data Pengiriman</span>
+        <span class="nav-badge" id="badge-total-shipments">0</span>
+      </button>
+
+      <button class="nav-item" data-target="section-schedule">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span>Jadwal Pickup</span>
+        <span class="nav-badge" id="badge-upcoming-dates">0</span>
+      </button>
+
+      <button class="nav-item" data-target="section-actions">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <span>Perlu Tindakan</span>
+        <span class="nav-badge danger" id="badge-action-items">0</span>
+      </button>
+
+      <div class="nav-label" style="margin-top: 14px;">Penanggung Jawab (PIC)</div>
+      <div style="padding: 0 12px; display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:#0284c7;"></span>
+          <span style="color:#cbd5e1;">SITE TUJUAN:</span>
+          <span style="color:#64748b;">LC, Jadwal, Arrive, Unload</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span>
+          <span style="color:#cbd5e1;">TEAM VM:</span>
+          <span style="color:#64748b;">Vendor & Armada</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="width:8px; height:8px; border-radius:50%; background:#a855f7;"></span>
+          <span style="color:#cbd5e1;">GII:</span>
+          <span style="color:#64748b;">Deliv Kendal & Packing List</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="route-info">
+        <svg style="width:14px; height:14px; color:#e82800;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Kendal &rarr; AHI Sidoarjo</span>
+      </div>
+      <div style="font-size:10px; color:#64748b; line-height:1.3;">
+        PT Aspirasi Hidup Indonesia Tbk
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT WRAPPER -->
+  <div id="main-wrapper">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="menu-toggle-btn" id="btn-toggle-menu" aria-label="Toggle Sidebar">
+          <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="header-title-box">
+          <h2>Monitoring Delivery Rack DDR - AHI Sidoarjo</h2>
+          <p>
+            <span>Live Sync Google Sheets</span>
+            <span>&bull;</span>
+            <span id="header-source-status">Menghubungkan...</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="update-indicator tabular-nums">
+          <svg style="width:14px; height:14px; color:var(--accent-teal);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="last-updated-text">Memuat data...</span>
+        </div>
+
+        <button class="btn btn-outline" id="btn-refresh" title="Muat ulang data Google Sheets">
+          <svg id="refresh-icon" style="width:14px; height:14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Refresh</span>
+        </button>
+
+        <button class="btn-icon" id="btn-theme-toggle" title="Ganti Mode Tampilan (Dark/Light)">
+          <svg id="icon-theme" style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY -->
+    <main class="content-area">
+
+      <!-- ERROR / STATUS BANNER (shown only if fetch error) -->
+      <div id="error-container" style="display: none;">
+        <div class="error-banner">
+          <div class="error-content">
+            <svg style="width:24px; height:24px; flex-shrink:0;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+              <strong style="font-size:14px; display:block;">Gagal Mengambil Data Langsung dari Google Sheets</strong>
+              <p style="font-size:12px; margin-top:2px;">Pastikan Google Sheet di-share <em>"Anyone with the link - Viewer"</em> agar dapat diakses oleh browser.</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline" id="btn-load-fallback" style="background:#ffffff; color:#0f172a;">Gunakan Backup Lokal</button>
+            <button class="btn btn-primary" id="btn-retry-fetch">Coba Lagi</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: OVERVIEW -->
+      <section id="section-overview" style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- 11 KPI METRICS CARDS -->
+        <div>
+          <div class="section-title">
+            <span>Metrik Kinerja Utama (KPI Logistik)</span>
+            <span class="section-subtitle">Real-time kalkulasi dari Google Sheets</span>
+          </div>
+
+          <div class="kpi-grid">
+            <!-- 1. Total Plan armada ( LC ) -->
+            <div class="kpi-card kpi-red">
+              <div class="kpi-top">
+                <span class="kpi-label">Total Plan armada ( LC )</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-total-request">-</div>
+            </div>
+
+            <!-- 2. Time pickup -->
+            <div class="kpi-card kpi-amber">
+              <div class="kpi-top">
+                <span class="kpi-label">Time pickup</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-waiting-assignment">-</div>
+            </div>
+
+            <!-- 3. In Transit -->
+            <div class="kpi-card kpi-blue">
+              <div class="kpi-top">
+                <span class="kpi-label">In Transit</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-in-transit">-</div>
+            </div>
+
+            <!-- 4. Arrived / Unloading -->
+            <div class="kpi-card kpi-cyan">
+              <div class="kpi-top">
+                <span class="kpi-label">Arrived / Unload</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-arrived">-</div>
+            </div>
+
+            <!-- 5. Completed -->
+            <div class="kpi-card kpi-emerald">
+              <div class="kpi-top">
+                <span class="kpi-label">Completed</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-completed">-</div>
+            </div>
+
+            <!-- 6. Overdue -->
+            <div class="kpi-card kpi-rose">
+              <div class="kpi-top">
+                <span class="kpi-label">Overdue</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-overdue">-</div>
+            </div>
+
+            <!-- 7. Avg Transit Time -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Avg Transit Time</span>
+                <div class="kpi-icon" style="background:var(--bg-surface-alt); color:var(--text-main);">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-avg-transit">-</div>
+            </div>
+
+            <!-- 8. Avg Unloading Time -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Avg Unloading Time</span>
+                <div class="kpi-icon" style="background:var(--bg-surface-alt); color:var(--text-main);">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-avg-unloading">-</div>
+            </div>
+
+            <!-- 9. Avg Total Cycle Time -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Avg Total Cycle Time</span>
+                <div class="kpi-icon" style="background:var(--bg-surface-alt); color:var(--text-main);">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-avg-cycle">-</div>
+            </div>
+
+            <!-- 10. Completion Rate -->
+            <div class="kpi-card kpi-teal">
+              <div class="kpi-top">
+                <span class="kpi-label">Completion Rate</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-completion-rate">0.0%</div>
+            </div>
+
+            <!-- 11. Packing List Completeness -->
+            <div class="kpi-card kpi-indigo">
+              <div class="kpi-top">
+                <span class="kpi-label">Packing List Rate</span>
+                <div class="kpi-icon">
+                  <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value tabular-nums" id="kpi-packing-rate">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FUNNEL / PIPELINE PROGRESS -->
+        <div class="pipeline-card">
+          <div class="section-title" style="margin-bottom: 12px;">
+            <span>Tahapan Alur Pengiriman (Delivery Pipeline)</span>
+            <span class="section-subtitle">Progres kumulatif status pergerakan rak</span>
+          </div>
+
+          <div class="pipeline-grid">
+            <div class="pipeline-step active">
+              <div class="pipeline-step-header">1. Total Plan (LC)</div>
+              <div class="pipeline-step-count tabular-nums" id="pipe-requested">0</div>
+              <div class="pipeline-step-pct" id="pipe-requested-pct">100%</div>
+              <div class="pipeline-arrow">&rarr;</div>
+            </div>
+
+            <div class="pipeline-step" id="pipe-step-assigned">
+              <div class="pipeline-step-header">2. Time Pickup (LC)</div>
+              <div class="pipeline-step-count tabular-nums" id="pipe-assigned">0</div>
+              <div class="pipeline-step-pct" id="pipe-assigned-pct">0%</div>
+              <div class="pipeline-arrow">&rarr;</div>
+            </div>
+
+            <div class="pipeline-step" id="pipe-step-transit">
+              <div class="pipeline-step-header">3. In Transit</div>
+              <div class="pipeline-step-count tabular-nums" id="pipe-transit">0</div>
+              <div class="pipeline-step-pct" id="pipe-transit-pct">0%</div>
+              <div class="pipeline-arrow">&rarr;</div>
+            </div>
+
+            <div class="pipeline-step" id="pipe-step-arrived">
+              <div class="pipeline-step-header">4. Arrived / Unload</div>
+              <div class="pipeline-step-count tabular-nums" id="pipe-arrived">0</div>
+              <div class="pipeline-step-pct" id="pipe-arrived-pct">0%</div>
+              <div class="pipeline-arrow">&rarr;</div>
+            </div>
+
+            <div class="pipeline-step" id="pipe-step-completed">
+              <div class="pipeline-step-header">5. Completed</div>
+              <div class="pipeline-step-count tabular-nums" id="pipe-completed">0</div>
+              <div class="pipeline-step-pct" id="pipe-completed-pct">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="charts-grid">
+          <!-- 1. Donut: Status Distribution -->
+          <div class="chart-box col-span-4">
+            <div class="chart-header">
+              <div class="chart-title">Distribusi Status Pengiriman</div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-status-donut"></canvas>
+              <div class="empty-state" id="empty-status-donut" style="display: none;">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                <p>Belum ada data status</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Bar: Daily Request Timeline -->
+          <div class="chart-box col-span-8">
+            <div class="chart-header">
+              <div class="chart-title">Jadwal Pick Up (Jumlah Request per Tanggal)</div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-timeline-bar"></canvas>
+              <div class="empty-state" id="empty-timeline-bar" style="display: none;">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <p>Belum ada tanggal request pick up</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Bar: Pengiriman per VENDOR -->
+          <div class="chart-box col-span-4">
+            <div class="chart-header">
+              <div class="chart-title">Pengiriman per Vendor</div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-vendor-bar"></canvas>
+              <div class="empty-state" id="empty-vendor-bar">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <p>Belum ada data vendor</p>
+                <span>Team VM belum menetapkan vendor armada</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Bar: Pengiriman per TYPE ARMADA -->
+          <div class="chart-box col-span-4">
+            <div class="chart-header">
+              <div class="chart-title">Tipe Armada</div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-armada-bar"></canvas>
+              <div class="empty-state" id="empty-armada-bar">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                <p>Belum ada data tipe armada</p>
+                <span>Team VM belum menginput jenis armada</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Line/Bar: Rata-rata Transit Time -->
+          <div class="chart-box col-span-4">
+            <div class="chart-header">
+              <div class="chart-title">Tren Durasi Transit (Hari)</div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-transit-time"></canvas>
+              <div class="empty-state" id="empty-transit-time">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                <p>Belum ada riwayat transit</p>
+                <span>Menunggu tanggal pengiriman & kedatangan</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 PANELS: JADWAL TERDEKAT & PERLU TINDAKAN -->
+        <div class="panels-grid">
+          <!-- PANEL: Jadwal Pickup Terdekat -->
+          <div class="panel-card" id="section-schedule">
+            <div class="section-title">
+              <span>Jadwal Pickup Terdekat</span>
+              <span class="section-subtitle">Dikelompokkan per tanggal pick up</span>
+            </div>
+            <div class="panel-list" id="upcoming-schedule-list">
+              <div style="padding: 20px; text-align: center; color: var(--text-muted);">Memuat jadwal pickup...</div>
+            </div>
+          </div>
+
+          <!-- PANEL: Perlu Tindakan -->
+          <div class="panel-card" id="section-actions">
+            <div class="section-title">
+              <span>Perlu Tindakan (Action Items)</span>
+              <span class="section-subtitle">Item Overdue & Menunggu Pengisian PIC</span>
+            </div>
+            <div class="panel-list" id="action-items-list">
+              <div style="padding: 20px; text-align: center; color: var(--text-muted);">Memuat daftar aksi...</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- SECTION: DATA SHIPMENTS TABLE -->
+      <section id="section-shipments" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="section-title">
+          <div>
+            <span style="font-size:16px;">Data Detail Pengiriman Delivery Rack DDR</span>
+            <div class="section-subtitle">Daftar lengkap baris pengiriman dengan filter, sort, dan export CSV</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline" id="btn-export-csv" title="Unduh CSV terfilter">
+              <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <!-- Toolbar Filters -->
+          <div class="table-toolbar">
+            <div class="toolbar-filters">
+              <div class="search-input-box">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" id="input-search" class="search-input" placeholder="Cari NO LC, Armada, Vendor..." />
+              </div>
+
+              <select id="filter-status" class="filter-select">
+                <option value="ALL">Semua Status</option>
+                <option value="OVERDUE">Khusus Overdue (> 3 Hari)</option>
+                <option value="time_pickup">Time Pickup (LC)</option>
+                <option value="armada_assigned">Armada Assigned</option>
+                <option value="in_transit">In Transit</option>
+                <option value="arrived">Arrived / Unload</option>
+                <option value="completed">Completed</option>
+                <option value="unscheduled">Unscheduled</option>
+              </select>
+
+              <select id="filter-vendor" class="filter-select">
+                <option value="ALL">Semua Vendor</option>
+              </select>
+
+              <select id="filter-type" class="filter-select">
+                <option value="ALL">Semua Tipe Armada</option>
+              </select>
+
+              <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted);">
+                <span>Jadwal:</span>
+                <input type="date" id="filter-date-from" class="date-filter-input" title="Dari tanggal" />
+                <span>-</span>
+                <input type="date" id="filter-date-to" class="date-filter-input" title="Sampai tanggal" />
+              </div>
+
+              <button class="btn btn-outline" id="btn-reset-filters" style="padding: 6px 10px; font-size: 11px;">Reset</button>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-muted);">
+              Tampil <strong id="lbl-filtered-count" class="tabular-nums" style="color:var(--text-main);">0</strong> dari <span id="lbl-total-count" class="tabular-nums">0</span> baris
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-wrapper">
+            <table class="data-table" id="main-table">
+              <thead>
+                <tr>
+                  <th data-col="no"><div class="th-content"><span>NO</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="noLc"><div class="th-content"><span>NO LC</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="typeArmada"><div class="th-content"><span>TYPE ARMADA</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="requestDate"><div class="th-content"><span>REQUEST DATE PICK UP</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="vendor"><div class="th-content"><span>VENDOR</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="noArmada"><div class="th-content"><span>NO ARMADA</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="actualDelivDate"><div class="th-content"><span>ACTUAL DELIV DATE KENDAL -&gt; AHI SDA</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="actualArriveDate"><div class="th-content"><span>ACTUAL ARRIVE DATE AT AHI SDA</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="packingList" class="no-sort"><div class="th-content"><span>PACKING LIST (Link)</span></div></th>
+                  <th data-col="actualFinishUnloading"><div class="th-content"><span>ACTUAL FINISH UNLOADING (BY DATE)</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="status"><div class="th-content"><span>STATUS</span><span class="sort-icon">&varr;</span></div></th>
+                  <th data-col="leadTime" class="no-sort"><div class="th-content"><span>LEAD TIME</span></div></th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <tr>
+                  <td colspan="12" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                    Memuat data pengiriman...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer Pagination -->
+          <div class="table-footer">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span>Baris per halaman:</span>
+              <select id="select-page-size" class="filter-select" style="padding: 4px 8px;">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="9999">Semua</option>
+              </select>
+            </div>
+
+            <div class="pagination-controls">
+              <button class="btn btn-outline" id="btn-prev-page" style="padding: 5px 10px;" disabled>&larr; Sebelumnya</button>
+              <span id="lbl-page-info" class="tabular-nums">Hal 1 dari 1</span>
+              <button class="btn btn-outline" id="btn-next-page" style="padding: 5px 10px;" disabled>Berikutnya &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL DETAIL SHIPMENT -->
+  <div class="modal-backdrop" id="modal-detail">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-title">Detail Pengiriman #1</h3>
+          <span id="modal-subtitle" style="font-size: 12px; color: var(--text-muted);">NO LC: -</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-modal" aria-label="Tutup">
+          <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Status & Overdue Badge -->
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div id="modal-status-badge"></div>
+          <div id="modal-pic-current"></div>
+        </div>
+
+        <!-- 5-Stage Timeline -->
+        <div>
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">
+            Progres 5 Tahapan Pengiriman
+          </div>
+          <div class="timeline" id="modal-timeline">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Type Armada (Team VM)</label>
+            <span id="modal-type-armada">-</span>
+          </div>
+          <div class="modal-field">
+            <label>Vendor (Team VM)</label>
+            <span id="modal-vendor">-</span>
+          </div>
+          <div class="modal-field">
+            <label>Nomor Polisi Armada</label>
+            <span id="modal-no-armada">-</span>
+          </div>
+          <div class="modal-field">
+            <label>Packing List (GII)</label>
+            <span id="modal-packing-list">-</span>
+          </div>
+          <div class="modal-field">
+            <label>Transit Lead Time</label>
+            <span id="modal-transit-time">-</span>
+          </div>
+          <div class="modal-field">
+            <label>Total Cycle Time</label>
+            <span id="modal-cycle-time">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VANILLA JAVASCRIPT APP LOGIC -->
+  <script>
+    /**
+     * MONITORING DELIVERY RACK DDR - AHI SIDOARJO
+     * Powered by az.ko (PT Aspirasi Hidup Indonesia Tbk)
+     */
+
+    // --- CONFIGURATION ---
+    const CONFIG = {
+      SHEET_ID: '1e0f4e_PICphWeT3nI52KMMEDnyW4proZJzf2izh_xWM',
+      SHEET_NAME: 'Sheet1',
+      PRIMARY_URL: 'https://docs.google.com/spreadsheets/d/1e0f4e_PICphWeT3nI52KMMEDnyW4proZJzf2izh_xWM/gviz/tq?tqx=out:csv&sheet=Sheet1',
+      FALLBACK_URL: 'https://docs.google.com/spreadsheets/d/1e0f4e_PICphWeT3nI52KMMEDnyW4proZJzf2izh_xWM/export?format=csv&sheet=Sheet1',
+      LOCAL_URL: '/assets/aistudio/MONITORING_DELIVERY_RACK_DDR_AHI_SIDOARJO_f22dc4f3',
+      REFRESH_INTERVAL_MS: 60000,
+    };
+
+    // --- APPLICATION STATE ---
+    const state = {
+      rawData: [],
+      shipments: [],
+      filteredShipments: [],
+      lastUpdated: null,
+      autoRefreshTimer: null,
+      splashCountdownTimer: null,
+      theme: localStorage.getItem('ahi_theme') || 'light',
+      pagination: {
+        page: 1,
+        pageSize: 25,
+      },
+      sort: {
+        column: 'no',
+        direction: 'asc',
+      },
+      filters: {
+        search: '',
+        status: 'ALL',
+        vendor: 'ALL',
+        typeArmada: 'ALL',
+        dateFrom: '',
+        dateTo: '',
+      },
+      charts: {
+        statusDonut: null,
+        timelineBar: null,
+        vendorBar: null,
+        armadaBar: null,
+        transitLine: null,
+      }
+    };
+
+    // Month mappings for multi-language parser
+    const MONTH_MAP = {
+      'january': 0, 'jan': 0, 'januari': 0,
+      'february': 1, 'feb': 1, 'februari': 1,
+      'march': 2, 'mar': 2, 'maret': 2,
+      'april': 3, 'apr': 3,
+      'may': 4, 'mei': 4,
+      'june': 5, 'jun': 5, 'juni': 5,
+      'july': 6, 'jul': 6, 'juli': 6,
+      'august': 7, 'aug': 7, 'agustus': 7, 'agu': 7,
+      'september': 8, 'sep': 8, 'sept': 8,
+      'october': 9, 'oct': 9, 'oktober': 9, 'okt': 9,
+      'november': 10, 'nov': 10, 'nopember': 10,
+      'december': 11, 'dec': 11, 'desember': 11, 'des': 11
+    };
+
+    const MONTH_NAMES_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    // --- AZKO RED SPLASH SCREEN CONTROLLER ---
+    function hideSplashScreen() {
+      const splash = document.getElementById('azko-splash-screen');
+      if (splash) {
+        splash.classList.add('is-hidden');
+      }
+      if (state.splashCountdownTimer) {
+        clearInterval(state.splashCountdownTimer);
+        state.splashCountdownTimer = null;
+      }
+    }
+
+    function showSplashScreen() {
+      const splash = document.getElementById('azko-splash-screen');
+      if (splash) {
+        splash.classList.remove('is-hidden');
+      }
+    }
+
+    function startSplashCountdown() {
+      let secondsLeft = 3;
+      const countdownEl = document.getElementById('splash-countdown');
+
+      state.splashCountdownTimer = setInterval(() => {
+        secondsLeft--;
+        if (countdownEl) {
+          if (secondsLeft > 0) {
+            countdownEl.textContent = `Masuk otomatis dalam ${secondsLeft} detik...`;
+          } else {
+            countdownEl.textContent = 'Membuka Dashboard...';
+          }
+        }
+        if (secondsLeft <= 0) {
+          clearInterval(state.splashCountdownTimer);
+          state.splashCountdownTimer = null;
+          hideSplashScreen();
+        }
+      }, 1000);
+    }
+
+    // --- CSV PARSER (RFC 4180 COMPLIANT) ---
+    function parseCSV(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentVal = '';
+      let inQuotes = false;
+      
+      const cleanText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      
+      for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        const nextChar = cleanText[i + 1];
+        
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentVal += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          currentRow.push(currentVal.trim());
+          currentVal = '';
+        } else if (char === '\n' && !inQuotes) {
+          currentRow.push(currentVal.trim());
+          if (currentRow.some(cell => cell.length > 0)) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentVal = '';
+        } else {
+          currentVal += char;
+        }
+      }
+      
+      if (currentVal.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentVal.trim());
+        if (currentRow.some(cell => cell.length > 0)) {
+          rows.push(currentRow);
+        }
+      }
+      
+      return rows;
+    }
+
+    // --- DATE PARSER & FORMATTER ---
+    function parseDate(raw) {
+      if (!raw || typeof raw !== 'string') return null;
+      const str = raw.trim();
+      if (!str || str === '-' || str.toLowerCase() === 'null') return null;
+
+      // 1. Google Sheets Date(YYYY, MM, DD) format
+      const googleMatch = str.match(/Date\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (googleMatch) {
+        const y = parseInt(googleMatch[1], 10);
+        const m = parseInt(googleMatch[2], 10);
+        const d = parseInt(googleMatch[3], 10);
+        return new Date(y, m, d);
+      }
+
+      // 2. Format: "24 October 2026" or "24 Oktober 2026"
+      const textMatch = str.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if (textMatch) {
+        const d = parseInt(textMatch[1], 10);
+        const monthStr = textMatch[2].toLowerCase();
+        const y = parseInt(textMatch[3], 10);
+        if (MONTH_MAP.hasOwnProperty(monthStr)) {
+          return new Date(y, MONTH_MAP[monthStr], d);
+        }
+      }
+
+      // 3. Format: DD/MM/YYYY or DD-MM-YYYY
+      const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (dmyMatch) {
+        const d = parseInt(dmyMatch[1], 10);
+        const m = parseInt(dmyMatch[2], 10) - 1;
+        const y = parseInt(dmyMatch[3], 10);
+        return new Date(y, m, d);
+      }
+
+      // 4. Format: YYYY-MM-DD
+      const ymdMatch = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      if (ymdMatch) {
+        const y = parseInt(ymdMatch[1], 10);
+        const m = parseInt(ymdMatch[2], 10) - 1;
+        const d = parseInt(ymdMatch[3], 10);
+        return new Date(y, m, d);
+      }
+
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+
+      return null;
+    }
+
+    function formatDate(date) {
+      if (!date || isNaN(date.getTime())) return '-';
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = MONTH_NAMES_ID[date.getMonth()];
+      const y = date.getFullYear();
+      return `${d} ${m} ${y}`;
+    }
+
+    function formatTime(date) {
+      if (!date) return '-';
+      return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+    }
+
+    // --- STATUS ENGINE ---
+    function computeStatus(item, today) {
+      if (item.actualFinishUnloading) {
+        return { key: 'completed', label: 'Completed', class: 'completed' };
+      }
+      if (item.actualArriveDate) {
+        return { key: 'arrived', label: 'Arrived / Unload', class: 'arrived' };
+      }
+      if (item.actualDelivDate) {
+        return { key: 'in_transit', label: 'In Transit', class: 'in_transit' };
+      }
+      if (item.vendor || item.noArmada) {
+        return { key: 'armada_assigned', label: 'Armada Assigned', class: 'armada_assigned' };
+      }
+      if (item.noLc) {
+        return { key: 'time_pickup', label: 'Time Pickup (LC)', class: 'time_pickup' };
+      }
+      if (item.requestDate) {
+        return { key: 'time_pickup', label: 'Time Pickup', class: 'time_pickup' };
+      }
+      return { key: 'unscheduled', label: 'Unscheduled', class: 'unscheduled' };
+    }
+
+    function checkOverdue(item, today) {
+      if (!item.requestDate) return false;
+
+      // Jika tanggal Arrived / Unload lebih dari 3 hari dari time pick
+      if (item.actualArriveDate) {
+        const diffMs = item.actualArriveDate.getTime() - item.requestDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        return diffDays > 3;
+      }
+
+      // Jika belum tiba, cek apakah hari ini sudah lebih dari 3 hari lewat dari time pick
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+      const reqStart = new Date(item.requestDate.getFullYear(), item.requestDate.getMonth(), item.requestDate.getDate()).getTime();
+      const diffDays = Math.floor((todayStart - reqStart) / (1000 * 60 * 60 * 24));
+      return diffDays > 3;
+    }
+
+    // --- NORMALIZATION & COLUMN MAPPING ---
+    function normalizeRows(rawRows) {
+      if (!rawRows || rawRows.length === 0) return [];
+
+      let headerIndex = -1;
+      for (let r = 0; r < Math.min(rawRows.length, 5); r++) {
+        const rowStr = rawRows[r].join(' ').toUpperCase();
+        if ((rowStr.includes('NO LC') || rowStr.includes('REQUEST DATE')) && rowStr.includes('NO')) {
+          headerIndex = r;
+          break;
+        }
+      }
+
+      if (headerIndex === -1 && rawRows.length >= 3) {
+        headerIndex = 2;
+      } else if (headerIndex === -1) {
+        headerIndex = 0;
+      }
+
+      const headers = rawRows[headerIndex].map(h => h.trim().toUpperCase());
+      
+      let colNo = headers.findIndex(h => h === 'NO' || h.endsWith(' NO'));
+      let colNoLc = headers.findIndex(h => h.includes('NO LC') || h.includes('LC'));
+      let colTypeArmada = headers.findIndex(h => h.includes('TYPE ARMADA') || h.includes('TIPE ARMADA'));
+      let colRequestDate = headers.findIndex(h => h.includes('REQUEST DATE') || h.includes('PICK UP'));
+      let colVendor = headers.findIndex(h => h === 'VENDOR' || h.endsWith(' VENDOR'));
+      let colNoArmada = headers.findIndex(h => h.includes('NO ARMADA') || h.includes('NO. ARMADA'));
+      let colDelivDate = headers.findIndex(h => h.includes('DELIV DATE') || h.includes('KENDAL'));
+      let colArriveDate = headers.findIndex(h => h.includes('ARRIVE DATE') || h.includes('AHI SDA'));
+      let colPackingList = headers.findIndex(h => h.includes('PACKING LIST') || h.includes('LINK'));
+      let colFinishUnload = headers.findIndex(h => h.includes('FINISH UNLOADING') || h.includes('UNLOADING'));
+
+      if (colNo === -1) colNo = 0;
+      if (colNoLc === -1) colNoLc = 1;
+      if (colTypeArmada === -1) colTypeArmada = 2;
+      if (colRequestDate === -1) colRequestDate = 3;
+      if (colVendor === -1) colVendor = 4;
+      if (colNoArmada === -1) colNoArmada = 5;
+      if (colDelivDate === -1) colDelivDate = 6;
+      if (colArriveDate === -1) colArriveDate = 7;
+      if (colPackingList === -1) colPackingList = 8;
+      if (colFinishUnload === -1) colFinishUnload = 9;
+
+      const dataRows = rawRows.slice(headerIndex + 1);
+      const shipments = [];
+      const today = new Date();
+
+      dataRows.forEach((row) => {
+        const rawNo = (row[colNo] || '').trim();
+        if (!rawNo || isNaN(Number(rawNo))) return;
+
+        const no = parseInt(rawNo, 10);
+        const noLc = (row[colNoLc] || '').trim();
+        const typeArmada = (row[colTypeArmada] || '').trim();
+        const rawReqDate = (row[colRequestDate] || '').trim();
+        const requestDate = parseDate(rawReqDate);
+
+        const vendor = (row[colVendor] || '').trim();
+        const noArmada = (row[colNoArmada] || '').trim();
+
+        const rawDelivDate = (row[colDelivDate] || '').trim();
+        const actualDelivDate = parseDate(rawDelivDate);
+
+        const rawArriveDate = (row[colArriveDate] || '').trim();
+        const actualArriveDate = parseDate(rawArriveDate);
+
+        const packingList = (row[colPackingList] || '').trim();
+
+        const rawFinishUnload = (row[colFinishUnload] || '').trim();
+        const actualFinishUnloading = parseDate(rawFinishUnload);
+
+        const item = {
+          id: `shipment-${no}`,
+          no,
+          noLc,
+          typeArmada,
+          rawReqDate,
+          requestDate,
+          vendor,
+          noArmada,
+          rawDelivDate,
+          actualDelivDate,
+          rawArriveDate,
+          actualArriveDate,
+          packingList,
+          rawFinishUnload,
+          actualFinishUnloading,
+        };
+
+        item.status = computeStatus(item, today);
+        item.isOverdue = checkOverdue(item, today);
+
+        let transitDays = null;
+        if (item.actualDelivDate && item.actualArriveDate) {
+          const diffMs = item.actualArriveDate.getTime() - item.actualDelivDate.getTime();
+          transitDays = Math.max(0, Math.round((diffMs / (1000 * 60 * 60 * 24)) * 10) / 10);
+        }
+        item.transitDays = transitDays;
+
+        let unloadingDays = null;
+        if (item.actualArriveDate && item.actualFinishUnloading) {
+          const diffMs = item.actualFinishUnloading.getTime() - item.actualArriveDate.getTime();
+          unloadingDays = Math.max(0, Math.round((diffMs / (1000 * 60 * 60 * 24)) * 10) / 10);
+        }
+        item.unloadingDays = unloadingDays;
+
+        let cycleDays = null;
+        if (item.requestDate && item.actualFinishUnloading) {
+          const diffMs = item.actualFinishUnloading.getTime() - item.requestDate.getTime();
+          cycleDays = Math.max(0, Math.round((diffMs / (1000 * 60 * 60 * 24)) * 10) / 10);
+        }
+        item.cycleDays = cycleDays;
+
+        shipments.push(item);
+      });
+
+      return shipments;
+    }
+
+    // --- DATA FETCHING ENGINE ---
+    async function fetchGoogleSheetsData() {
+      const refreshBtn = document.getElementById('btn-refresh');
+      const refreshIcon = document.getElementById('refresh-icon');
+      const sourceStatus = document.getElementById('header-source-status');
+      const errorContainer = document.getElementById('error-container');
+
+      refreshBtn.disabled = true;
+      refreshIcon.classList.add('spin');
+      sourceStatus.textContent = 'Menghubungkan ke Google Sheets...';
+
+      let csvText = '';
+      let fetchSuccess = false;
+
+      // 1. Try Primary GViz URL
+      try {
+        const resp = await fetch(CONFIG.PRIMARY_URL, { cache: 'no-store' });
+        if (resp.ok) {
+          csvText = await resp.text();
+          if (csvText.length > 50 && csvText.includes(',')) {
+            fetchSuccess = true;
+            sourceStatus.textContent = 'Terhubung Live (GViz)';
+          }
+        }
+      } catch (err) {
+        console.warn('GViz fetch failed, trying direct export...', err);
+      }
+
+      // 2. Try Secondary Export URL
+      if (!fetchSuccess) {
+        try {
+          const resp = await fetch(CONFIG.FALLBACK_URL, { cache: 'no-store' });
+          if (resp.ok) {
+            csvText = await resp.text();
+            if (csvText.length > 50 && csvText.includes(',')) {
+              fetchSuccess = true;
+              sourceStatus.textContent = 'Terhubung Live (Export)';
+            }
+          }
+        } catch (err) {
+          console.warn('Export fetch failed, trying local fallback...', err);
+        }
+      }
+
+      // 3. Try Local Asset Fallback
+      if (!fetchSuccess) {
+        try {
+          const resp = await fetch(CONFIG.LOCAL_URL);
+          if (resp.ok) {
+            csvText = await resp.text();
+            if (csvText.length > 50 && csvText.includes(',')) {
+              fetchSuccess = true;
+              sourceStatus.textContent = 'Snapshot Terakhir (Lokal)';
+              console.info('Loaded from local attachment backup');
+            }
+          }
+        } catch (err) {
+          console.error('All fetch sources failed', err);
+        }
+      }
+
+      refreshBtn.disabled = false;
+      refreshIcon.classList.remove('spin');
+
+      if (!fetchSuccess || !csvText) {
+        errorContainer.style.display = 'block';
+        sourceStatus.textContent = 'Koneksi Gagal';
+        return false;
+      }
+
+      errorContainer.style.display = 'none';
+
+      const parsedRows = parseCSV(csvText);
+      state.rawData = parsedRows;
+      state.shipments = normalizeRows(parsedRows);
+      state.lastUpdated = new Date();
+
+      document.getElementById('last-updated-text').textContent = 'Update: ' + formatTime(state.lastUpdated);
+
+      populateFilterOptions();
+      applyFiltersAndRender();
+
+      return true;
+    }
+
+    // --- POPULATE FILTER DROPDOWNS ---
+    function populateFilterOptions() {
+      const vendorSelect = document.getElementById('filter-vendor');
+      const typeSelect = document.getElementById('filter-type');
+
+      const currentVendor = state.filters.vendor;
+      const currentType = state.filters.typeArmada;
+
+      const vendors = new Set();
+      const types = new Set();
+
+      state.shipments.forEach(s => {
+        if (s.vendor) vendors.add(s.vendor);
+        if (s.typeArmada) types.add(s.typeArmada);
+      });
+
+      vendorSelect.innerHTML = '<option value="ALL">Semua Vendor</option>';
+      Array.from(vendors).sort().forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        if (v === currentVendor) opt.selected = true;
+        vendorSelect.appendChild(opt);
+      });
+
+      typeSelect.innerHTML = '<option value="ALL">Semua Tipe Armada</option>';
+      Array.from(types).sort().forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        if (t === currentType) opt.selected = true;
+        typeSelect.appendChild(opt);
+      });
+    }
+
+    // --- APPLY FILTERS & SORT ---
+    function applyFiltersAndRender() {
+      let filtered = [...state.shipments];
+
+      const q = state.filters.search.toLowerCase().trim();
+      if (q) {
+        filtered = filtered.filter(item => {
+          return String(item.no).includes(q) ||
+            item.noLc.toLowerCase().includes(q) ||
+            item.vendor.toLowerCase().includes(q) ||
+            item.noArmada.toLowerCase().includes(q) ||
+            item.typeArmada.toLowerCase().includes(q);
+        });
+      }
+
+      if (state.filters.status !== 'ALL') {
+        if (state.filters.status === 'OVERDUE') {
+          filtered = filtered.filter(item => item.isOverdue);
+        } else if (state.filters.status === 'time_pickup') {
+          filtered = filtered.filter(item => item.status.key === 'time_pickup' || item.status.key === 'waiting_assignment');
+        } else {
+          filtered = filtered.filter(item => item.status.key === state.filters.status);
+        }
+      }
+
+      if (state.filters.vendor !== 'ALL') {
+        filtered = filtered.filter(item => item.vendor === state.filters.vendor);
+      }
+
+      if (state.filters.typeArmada !== 'ALL') {
+        filtered = filtered.filter(item => item.typeArmada === state.filters.typeArmada);
+      }
+
+      if (state.filters.dateFrom) {
+        const fromDate = new Date(state.filters.dateFrom);
+        filtered = filtered.filter(item => item.requestDate && item.requestDate >= fromDate);
+      }
+      if (state.filters.dateTo) {
+        const toDate = new Date(state.filters.dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(item => item.requestDate && item.requestDate <= toDate);
+      }
+
+      const col = state.sort.column;
+      const dir = state.sort.direction === 'asc' ? 1 : -1;
+
+      filtered.sort((a, b) => {
+        let valA = a[col];
+        let valB = b[col];
+
+        if (col === 'status') {
+          valA = a.status.label;
+          valB = b.status.label;
+        }
+
+        if (valA instanceof Date && valB instanceof Date) {
+          return (valA.getTime() - valB.getTime()) * dir;
+        }
+        if (valA instanceof Date) return -1 * dir;
+        if (valB instanceof Date) return 1 * dir;
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return (valA - valB) * dir;
+        }
+
+        const strA = (valA || '').toString().toLowerCase();
+        const strB = (valB || '').toString().toLowerCase();
+        return strA.localeCompare(strB) * dir;
+      });
+
+      state.filteredShipments = filtered;
+
+      updateKPICards();
+      updatePipeline();
+      updateCharts();
+      updatePanels();
+      renderTable();
+      updateBadges();
+    }
+
+    // --- UPDATE 11 KPI METRICS ---
+    function updateKPICards() {
+      const items = state.shipments;
+      const total = items.length;
+
+      // 1. Total Plan armada ( LC ) = total seluruh baris plan/request
+      const countPlanArmada = total;
+
+      // 2. Time pickup = mengikuti nomor LC (jika nomor LC ada 3 berarti jumlah time pick up ada 3)
+      let countTimePickup = 0;
+
+      // 3. In Transit = jika ACTUAL DELIV DATE KENDAL -> AHI SDA sudah terisi dan ACTUAL ARRIVE DATE AT AHI SDA belum terisi
+      let countInTransit = 0;
+
+      // 4. Arrived / Unload = jika sudah diisi tanggal kedatangan, berapa yang sudah datang
+      let countArrived = 0;
+
+      // 5. Completed = jika kolom ACTUAL FINISH UNLOADING (BY DATE) sudah terisi
+      let countCompleted = 0;
+
+      // 6. Overdue = jika tanggal Arrived / Unload lebih dari 3 hari dari time pick
+      let countOverdue = 0;
+
+      let sumTransitDays = 0, countTransitRows = 0;
+      let sumUnloadingDays = 0, countUnloadRows = 0;
+      let sumCycleDays = 0, countCycleRows = 0;
+      let countPackingList = 0, countEligiblePacking = 0;
+
+      items.forEach(item => {
+        if (item.noLc && item.noLc.trim() !== '') countTimePickup++;
+        if (item.actualDelivDate && !item.actualArriveDate) countInTransit++;
+        if (item.actualArriveDate) countArrived++;
+        if (item.actualFinishUnloading) countCompleted++;
+        if (item.isOverdue) countOverdue++;
+
+        if (item.transitDays !== null) {
+          sumTransitDays += item.transitDays;
+          countTransitRows++;
+        }
+        if (item.unloadingDays !== null) {
+          sumUnloadingDays += item.unloadingDays;
+          countUnloadRows++;
+        }
+        if (item.cycleDays !== null) {
+          sumCycleDays += item.cycleDays;
+          countCycleRows++;
+        }
+
+        if (item.actualDelivDate || item.actualArriveDate || item.actualFinishUnloading) {
+          countEligiblePacking++;
+          if (item.packingList && item.packingList.startsWith('http')) {
+            countPackingList++;
+          }
+        }
+      });
+
+      document.getElementById('kpi-total-request').textContent = countPlanArmada || 0;
+      document.getElementById('kpi-waiting-assignment').textContent = countTimePickup;
+      document.getElementById('kpi-in-transit').textContent = countInTransit;
+      document.getElementById('kpi-arrived').textContent = countArrived;
+      document.getElementById('kpi-completed').textContent = countCompleted;
+      document.getElementById('kpi-overdue').textContent = countOverdue;
+
+      const avgTransit = countTransitRows > 0 ? (sumTransitDays / countTransitRows).toFixed(1) + ' hari' : '-';
+      document.getElementById('kpi-avg-transit').textContent = avgTransit;
+
+      const avgUnload = countUnloadRows > 0 ? (sumUnloadingDays / countUnloadRows).toFixed(1) + ' hari' : '-';
+      document.getElementById('kpi-avg-unloading').textContent = avgUnload;
+
+      const avgCycle = countCycleRows > 0 ? (sumCycleDays / countCycleRows).toFixed(1) + ' hari' : '-';
+      document.getElementById('kpi-avg-cycle').textContent = avgCycle;
+
+      const compRate = total > 0 ? ((countCompleted / total) * 100).toFixed(1) + '%' : '0.0%';
+      document.getElementById('kpi-completion-rate').textContent = compRate;
+
+      const packingRate = countEligiblePacking > 0 ? ((countPackingList / countEligiblePacking) * 100).toFixed(1) + '%' : '-';
+      document.getElementById('kpi-packing-rate').textContent = packingRate;
+    }
+
+    // --- UPDATE DELIVERY PIPELINE FUNNEL ---
+    function updatePipeline() {
+      const items = state.shipments;
+      const total = items.length;
+
+      let cTimePickup = 0;
+      let cTransit = 0;
+      let cArrived = 0;
+      let cCompleted = 0;
+
+      items.forEach(i => {
+        if (i.noLc && i.noLc.trim() !== '') cTimePickup++;
+        if (i.actualDelivDate || i.actualArriveDate || i.actualFinishUnloading) cTransit++;
+        if (i.actualArriveDate || i.actualFinishUnloading) cArrived++;
+        if (i.actualFinishUnloading) cCompleted++;
+      });
+
+      document.getElementById('pipe-requested').textContent = total || 0;
+      document.getElementById('pipe-assigned').textContent = cTimePickup;
+      document.getElementById('pipe-transit').textContent = cTransit;
+      document.getElementById('pipe-arrived').textContent = cArrived;
+      document.getElementById('pipe-completed').textContent = cCompleted;
+
+      const pct = (val) => total > 0 ? Math.round((val / total) * 100) + '%' : '0%';
+      document.getElementById('pipe-assigned-pct').textContent = pct(cTimePickup);
+      document.getElementById('pipe-transit-pct').textContent = pct(cTransit);
+      document.getElementById('pipe-arrived-pct').textContent = pct(cArrived);
+      document.getElementById('pipe-completed-pct').textContent = pct(cCompleted);
+
+      document.getElementById('pipe-step-assigned').classList.toggle('active', cTimePickup > 0);
+      document.getElementById('pipe-step-transit').classList.toggle('active', cTransit > 0);
+      document.getElementById('pipe-step-arrived').classList.toggle('active', cArrived > 0);
+      document.getElementById('pipe-step-completed').classList.toggle('active', cCompleted > 0);
+    }
+
+    // --- UPDATE CHARTS (CHART.JS) ---
+    function updateCharts() {
+      const items = state.shipments;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? '#1e2c48' : '#e2e8f0';
+
+      // 1. Status Donut Chart
+      const statusCounts = {
+        'time_pickup': 0,
+        'waiting_assignment': 0,
+        'armada_assigned': 0,
+        'in_transit': 0,
+        'arrived': 0,
+        'completed': 0,
+        'unscheduled': 0
+      };
+
+      items.forEach(i => {
+        if (statusCounts.hasOwnProperty(i.status.key)) {
+          statusCounts[i.status.key]++;
+        }
+      });
+
+      const donutLabels = ['Time Pickup (LC)', 'Armada Assigned', 'In Transit', 'Arrived / Unload', 'Completed', 'Unscheduled'];
+      const donutValues = [
+        statusCounts['time_pickup'] + statusCounts['waiting_assignment'],
+        statusCounts['armada_assigned'],
+        statusCounts['in_transit'],
+        statusCounts['arrived'],
+        statusCounts['completed'],
+        statusCounts['unscheduled']
+      ];
+      const donutColors = ['#f59e0b', '#6366f1', '#2563eb', '#06b6d4', '#16a34a', '#94a3b8'];
+
+      const totalStatus = donutValues.reduce((a, b) => a + b, 0);
+      const emptyDonut = document.getElementById('empty-status-donut');
+
+      if (totalStatus === 0) {
+        emptyDonut.style.display = 'flex';
+        if (state.charts.statusDonut) state.charts.statusDonut.destroy();
+      } else {
+        emptyDonut.style.display = 'none';
+        const ctxDonut = document.getElementById('chart-status-donut').getContext('2d');
+        if (state.charts.statusDonut) state.charts.statusDonut.destroy();
+
+        state.charts.statusDonut = new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+            labels: donutLabels,
+            datasets: [{
+              data: donutValues,
+              backgroundColor: donutColors,
+              borderWidth: 2,
+              borderColor: isDark ? '#111a2e' : '#ffffff',
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  color: textColor,
+                  font: { family: 'Inter', size: 11 }
+                }
+              }
+            },
+            cutout: '68%'
+          }
+        });
+      }
+
+      // 2. Bar: Timeline Request Pickup
+      const dateMap = {};
+      items.forEach(i => {
+        if (i.requestDate) {
+          const dateKey = formatDate(i.requestDate);
+          dateMap[dateKey] = (dateMap[dateKey] || 0) + 1;
+        }
+      });
+
+      const sortedDateKeys = Object.keys(dateMap).sort((a, b) => {
+        return parseDate(a).getTime() - parseDate(b).getTime();
+      });
+
+      const emptyTimeline = document.getElementById('empty-timeline-bar');
+      if (sortedDateKeys.length === 0) {
+        emptyTimeline.style.display = 'flex';
+        if (state.charts.timelineBar) state.charts.timelineBar.destroy();
+      } else {
+        emptyTimeline.style.display = 'none';
+        const ctxTimeline = document.getElementById('chart-timeline-bar').getContext('2d');
+        if (state.charts.timelineBar) state.charts.timelineBar.destroy();
+
+        state.charts.timelineBar = new Chart(ctxTimeline, {
+          type: 'bar',
+          data: {
+            labels: sortedDateKeys,
+            datasets: [{
+              label: 'Jumlah Armada Diminta',
+              data: sortedDateKeys.map(k => dateMap[k]),
+              backgroundColor: '#e82800',
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                ticks: { color: textColor, font: { family: 'Inter', size: 11 } },
+                grid: { display: false }
+              },
+              y: {
+                ticks: { color: textColor, stepSize: 1, font: { family: 'Inter', size: 11 } },
+                grid: { color: gridColor },
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+
+      // 3. Bar: Vendor Breakdown
+      const vendorMap = {};
+      items.forEach(i => {
+        if (i.vendor) {
+          vendorMap[i.vendor] = (vendorMap[i.vendor] || 0) + 1;
+        }
+      });
+      const vendorKeys = Object.keys(vendorMap);
+      const emptyVendor = document.getElementById('empty-vendor-bar');
+
+      if (vendorKeys.length === 0) {
+        emptyVendor.style.display = 'flex';
+        if (state.charts.vendorBar) state.charts.vendorBar.destroy();
+      } else {
+        emptyVendor.style.display = 'none';
+        const ctxVendor = document.getElementById('chart-vendor-bar').getContext('2d');
+        if (state.charts.vendorBar) state.charts.vendorBar.destroy();
+
+        state.charts.vendorBar = new Chart(ctxVendor, {
+          type: 'bar',
+          data: {
+            labels: vendorKeys,
+            datasets: [{
+              label: 'Pengiriman',
+              data: vendorKeys.map(k => vendorMap[k]),
+              backgroundColor: '#0d9488',
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { ticks: { color: textColor, font: { family: 'Inter', size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // 4. Bar: Type Armada Breakdown
+      const armadaMap = {};
+      items.forEach(i => {
+        if (i.typeArmada) {
+          armadaMap[i.typeArmada] = (armadaMap[i.typeArmada] || 0) + 1;
+        }
+      });
+      const armadaKeys = Object.keys(armadaMap);
+      const emptyArmada = document.getElementById('empty-armada-bar');
+
+      if (armadaKeys.length === 0) {
+        emptyArmada.style.display = 'flex';
+        if (state.charts.armadaBar) state.charts.armadaBar.destroy();
+      } else {
+        emptyArmada.style.display = 'none';
+        const ctxArmada = document.getElementById('chart-armada-bar').getContext('2d');
+        if (state.charts.armadaBar) state.charts.armadaBar.destroy();
+
+        state.charts.armadaBar = new Chart(ctxArmada, {
+          type: 'bar',
+          data: {
+            labels: armadaKeys,
+            datasets: [{
+              label: 'Unit',
+              data: armadaKeys.map(k => armadaMap[k]),
+              backgroundColor: '#6366f1',
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { ticks: { color: textColor, font: { family: 'Inter', size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // 5. Line/Bar: Transit Time Trend
+      const transitData = items.filter(i => i.transitDays !== null);
+      const emptyTransit = document.getElementById('empty-transit-time');
+
+      if (transitData.length === 0) {
+        emptyTransit.style.display = 'flex';
+        if (state.charts.transitLine) state.charts.transitLine.destroy();
+      } else {
+        emptyTransit.style.display = 'none';
+        const ctxTransit = document.getElementById('chart-transit-time').getContext('2d');
+        if (state.charts.transitLine) state.charts.transitLine.destroy();
+
+        state.charts.transitLine = new Chart(ctxTransit, {
+          type: 'line',
+          data: {
+            labels: transitData.map(i => i.noLc || `No.${i.no}`),
+            datasets: [{
+              label: 'Hari Transit',
+              data: transitData.map(i => i.transitDays),
+              borderColor: '#e82800',
+              backgroundColor: 'rgba(232, 40, 0, 0.12)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { ticks: { color: textColor, font: { family: 'Inter', size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+    }
+
+    // --- UPDATE SIDE PANELS (JADWAL & PERLU TINDAKAN) ---
+    function updatePanels() {
+      const items = state.shipments;
+      const today = new Date();
+      const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+      // 1. Upcoming Schedule Panel
+      const scheduleContainer = document.getElementById('upcoming-schedule-list');
+      const dateGroups = {};
+
+      items.forEach(item => {
+        if (item.requestDate) {
+          const key = item.requestDate.toISOString().split('T')[0];
+          if (!dateGroups[key]) {
+            dateGroups[key] = {
+              date: item.requestDate,
+              items: []
+            };
+          }
+          dateGroups[key].items.push(item);
+        }
+      });
+
+      const sortedDates = Object.keys(dateGroups).sort();
+      let scheduleHtml = '';
+
+      if (sortedDates.length === 0) {
+        scheduleHtml = '<div style="padding:20px; text-align:center; color:var(--text-muted);">Belum ada jadwal pickup terdaftar.</div>';
+      } else {
+        sortedDates.forEach(dateKey => {
+          const group = dateGroups[dateKey];
+          const itemDate = group.date;
+          const dayNum = itemDate.getDate();
+          const monthStr = MONTH_NAMES_ID[itemDate.getMonth()];
+          const count = group.items.length;
+
+          const itemZero = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate()).getTime();
+          const diffDays = Math.round((itemZero - todayZero) / (1000 * 60 * 60 * 24));
+          let countdownText = '';
+          if (diffDays === 0) countdownText = '<span style="color:#d97706; font-weight:600;">Hari ini</span>';
+          else if (diffDays === 1) countdownText = '<span style="color:#2563eb; font-weight:600;">Besok</span>';
+          else if (diffDays > 1) countdownText = `<span>${diffDays} hari lagi</span>`;
+          else countdownText = `<span style="color:#dc2626; font-weight:600;">${Math.abs(diffDays)} hari lalu</span>`;
+
+          const lcSample = group.items.map(i => i.noLc || `No.${i.no}`).slice(0, 3).join(', ');
+          const extraCount = count > 3 ? ` +${count - 3} lainnya` : '';
+
+          scheduleHtml += `
+            <div class="schedule-item" onclick="filterByDateSchedule('${dateKey}')">
+              <div class="schedule-date-box">
+                <div class="date-badge">
+                  <div class="date-badge-day tabular-nums">${dayNum}</div>
+                  <div class="date-badge-month">${monthStr}</div>
+                </div>
+                <div class="schedule-details">
+                  <h4>${count} Armada Diminta &bull; ${countdownText}</h4>
+                  <p>${lcSample}${extraCount}</p>
+                </div>
+              </div>
+              <svg style="width:16px; height:16px; color:var(--text-subtle);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </div>
+          `;
+        });
+      }
+      scheduleContainer.innerHTML = scheduleHtml;
+
+      // 2. Action Items Panel
+      const actionContainer = document.getElementById('action-items-list');
+      const actionItems = [];
+
+      items.forEach(item => {
+        if (item.isOverdue) {
+          actionItems.push({
+            urgent: true,
+            title: `OVERDUE: No.${item.no} (${item.noLc || 'Belum ada LC'})`,
+            desc: item.actualArriveDate 
+              ? `Kedatangan (${formatDate(item.actualArriveDate)}) melebihi 3 hari dari jadwal time pick up (${formatDate(item.requestDate)}).`
+              : `Jadwal time pick up (${formatDate(item.requestDate)}) sudah lewat > 3 hari dan belum tiba di Site AHI Sidoarjo.`,
+            pic: 'GII & TEAM VM',
+            picClass: 'pic-vm',
+            item
+          });
+        }
+        else if (item.status.key === 'waiting_assignment' || item.status.key === 'time_pickup') {
+          let missingDetail = [];
+          if (!item.vendor && !item.noArmada) missingDetail.push('Penugasan Vendor & Armada (Team VM)');
+          if (!item.noLc) missingDetail.push('Input NO LC (Site Tujuan)');
+
+          actionItems.push({
+            urgent: false,
+            title: `Time Pickup: No.${item.no} &bull; Jadwal ${formatDate(item.requestDate)}`,
+            desc: `Perlu dilengkapi: ${missingDetail.join(' & ')}.`,
+            pic: !item.vendor ? 'TEAM VM' : 'SITE TUJUAN',
+            picClass: !item.vendor ? 'pic-vm' : 'pic-site',
+            item
+          });
+        }
+      });
+
+      let actionsHtml = '';
+      if (actionItems.length === 0) {
+        actionsHtml = '<div style="padding:20px; text-align:center; color:var(--status-completed); font-weight:600;">Semua pengiriman berjalan tepat waktu & tidak ada aksi tertunda!</div>';
+      } else {
+        actionItems.slice(0, 15).forEach(act => {
+          actionsHtml += `
+            <div class="action-item ${act.urgent ? 'urgent' : ''}" onclick="openDetailModal('${act.item.id}')" style="cursor:pointer;">
+              <div class="action-item-top">
+                <span class="action-item-title">
+                  ${act.urgent ? '<span style="color:#dc2626;">&bull;</span>' : '<span style="color:#f59e0b;">&bull;</span>'}
+                  ${act.title}
+                </span>
+                <span class="pic-tag ${act.picClass}">PIC: ${act.pic}</span>
+              </div>
+              <div class="action-item-desc">${act.desc}</div>
+            </div>
+          `;
+        });
+      }
+      actionContainer.innerHTML = actionsHtml;
+
+      document.getElementById('badge-action-items').textContent = actionItems.length;
+    }
+
+    // Quick filter helper from schedule panel click
+    window.filterByDateSchedule = function(dateStr) {
+      document.getElementById('filter-date-from').value = dateStr;
+      document.getElementById('filter-date-to').value = dateStr;
+      state.filters.dateFrom = dateStr;
+      state.filters.dateTo = dateStr;
+      applyFiltersAndRender();
+      document.getElementById('section-shipments').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // --- RENDER INTERACTIVE TABLE ---
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      const filtered = state.filteredShipments;
+      const totalCount = state.shipments.length;
+
+      document.getElementById('lbl-filtered-count').textContent = filtered.length;
+      document.getElementById('lbl-total-count').textContent = totalCount;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              Tidak ada data pengiriman yang cocok dengan filter.
+            </td>
+          </tr>
+        `;
+        document.getElementById('lbl-page-info').textContent = 'Hal 0 dari 0';
+        document.getElementById('btn-prev-page').disabled = true;
+        document.getElementById('btn-next-page').disabled = true;
+        return;
+      }
+
+      const pageSize = state.pagination.pageSize;
+      const totalPages = Math.ceil(filtered.length / pageSize);
+      if (state.pagination.page > totalPages) state.pagination.page = 1;
+      const start = (state.pagination.page - 1) * pageSize;
+      const end = start + pageSize;
+      const pagedItems = filtered.slice(start, end);
+
+      let rowsHtml = '';
+      pagedItems.forEach(item => {
+        const leadTimeText = item.transitDays !== null ? `${item.transitDays} hr` : '-';
+        const packingLinkHtml = item.packingList && item.packingList.startsWith('http')
+          ? `<a href="${item.packingList}" target="_blank" rel="noopener noreferrer" class="link-btn" onclick="event.stopPropagation();">Buka &nearr;</a>`
+          : '<span style="color:var(--text-subtle);">-</span>';
+
+        rowsHtml += `
+          <tr onclick="openDetailModal('${item.id}')">
+            <td class="tabular-nums font-semibold">${item.no}</td>
+            <td class="font-mono">${item.noLc || '<span style="color:var(--text-subtle);">-</span>'}</td>
+            <td>${item.typeArmada || '<span style="color:var(--text-subtle);">-</span>'}</td>
+            <td class="tabular-nums">${formatDate(item.requestDate)}</td>
+            <td>${item.vendor || '<span style="color:var(--text-subtle);">-</span>'}</td>
+            <td class="font-mono">${item.noArmada || '<span style="color:var(--text-subtle);">-</span>'}</td>
+            <td class="tabular-nums">${formatDate(item.actualDelivDate)}</td>
+            <td class="tabular-nums">${formatDate(item.actualArriveDate)}</td>
+            <td>${packingLinkHtml}</td>
+            <td class="tabular-nums">${formatDate(item.actualFinishUnloading)}</td>
+            <td>
+              <span class="status-badge ${item.status.class}">
+                &bull; ${item.status.label}
+              </span>
+              ${item.isOverdue ? '<span class="tag-overdue">OVERDUE</span>' : ''}
+            </td>
+            <td class="tabular-nums">${leadTimeText}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = rowsHtml;
+
+      document.getElementById('lbl-page-info').textContent = `Hal ${state.pagination.page} dari ${totalPages || 1}`;
+      document.getElementById('btn-prev-page').disabled = state.pagination.page <= 1;
+      document.getElementById('btn-next-page').disabled = state.pagination.page >= totalPages;
+    }
+
+    // --- UPDATE SIDEBAR BADGES ---
+    function updateBadges() {
+      document.getElementById('badge-total-shipments').textContent = state.shipments.length;
+
+      const uniqueDates = new Set();
+      state.shipments.forEach(s => {
+        if (s.requestDate) uniqueDates.add(s.requestDate.toISOString().split('T')[0]);
+      });
+      document.getElementById('badge-upcoming-dates').textContent = uniqueDates.size;
+    }
+
+    // --- MODAL DETAIL SHIPMENT ENGINE ---
+    window.openDetailModal = function(shipmentId) {
+      const item = state.shipments.find(s => s.id === shipmentId);
+      if (!item) return;
+
+      document.getElementById('modal-title').textContent = `Detail Pengiriman #${item.no}`;
+      document.getElementById('modal-subtitle').textContent = `NO LC: ${item.noLc || 'Belum diisi (PIC: SITE TUJUAN)'}`;
+
+      const statusBadge = document.getElementById('modal-status-badge');
+      statusBadge.innerHTML = `
+        <span class="status-badge ${item.status.class}" style="font-size:13px; padding:4px 10px;">
+          &bull; ${item.status.label}
+        </span>
+        ${item.isOverdue ? '<span class="tag-overdue" style="font-size:11px; padding:3px 8px;">OVERDUE JADWAL</span>' : ''}
+      `;
+
+      const stages = [
+        {
+          id: 1,
+          name: '1. Request Pick Up',
+          pic: 'SITE TUJUAN',
+          picClass: 'pic-site',
+          date: item.requestDate,
+          desc: item.requestDate ? `Diminta untuk tanggal ${formatDate(item.requestDate)}` : 'Tanggal request belum diinput',
+          isDone: !!item.requestDate,
+          isCurrent: !item.vendor && !item.noArmada && !!item.requestDate
+        },
+        {
+          id: 2,
+          name: '2. Penugasan Armada & Vendor',
+          pic: 'TEAM VM',
+          picClass: 'pic-vm',
+          date: null,
+          desc: (item.vendor || item.noArmada) ? `${item.typeArmada || 'Armada'}: ${item.vendor || '-'} (${item.noArmada || '-'})` : 'Menunggu TEAM VM menugaskan vendor & nomor polisi armada',
+          isDone: !!(item.vendor || item.noArmada),
+          isCurrent: !!(item.vendor || item.noArmada) && !item.actualDelivDate
+        },
+        {
+          id: 3,
+          name: '3. Keberangkatan Kendal -> AHI SDA',
+          pic: 'GII',
+          picClass: 'pic-gii',
+          date: item.actualDelivDate,
+          desc: item.actualDelivDate ? `Berangkat dari pabrik Kendal: ${formatDate(item.actualDelivDate)}` : 'Menunggu GII mengonfirmasi pengiriman Kendal & packing list',
+          isDone: !!item.actualDelivDate,
+          isCurrent: !!item.actualDelivDate && !item.actualArriveDate
+        },
+        {
+          id: 4,
+          name: '4. Tiba di Site AHI Sidoarjo',
+          pic: 'SITE TUJUAN',
+          picClass: 'pic-site',
+          date: item.actualArriveDate,
+          desc: item.actualArriveDate ? `Tiba di AHI Sidoarjo: ${formatDate(item.actualArriveDate)}` : 'Menunggu armada tiba di lokasi site tujuan',
+          isDone: !!item.actualArriveDate,
+          isCurrent: !!item.actualArriveDate && !item.actualFinishUnloading
+        },
+        {
+          id: 5,
+          name: '5. Selesai Bongkar (Unloading)',
+          pic: 'SITE TUJUAN',
+          picClass: 'pic-site',
+          date: item.actualFinishUnloading,
+          desc: item.actualFinishUnloading ? `Selesai proses unloading: ${formatDate(item.actualFinishUnloading)}` : 'Menunggu konfirmasi selesai pembongkaran rak oleh Site Tujuan',
+          isDone: !!item.actualFinishUnloading,
+          isCurrent: false
+        }
+      ];
+
+      let timelineHtml = '';
+      stages.forEach(st => {
+        const stateClass = st.isDone ? 'done' : (st.isCurrent ? 'current' : '');
+        timelineHtml += `
+          <div class="timeline-node ${stateClass}">
+            <div class="timeline-indicator">
+              ${st.isDone ? '&check;' : st.id}
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-top">
+                <span class="timeline-title">${st.name}</span>
+                <span class="pic-tag ${st.picClass}">PIC: ${st.pic}</span>
+              </div>
+              <div class="timeline-date">${st.date ? formatDate(st.date) : ''}</div>
+              <div class="timeline-detail">${st.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+      document.getElementById('modal-timeline').innerHTML = timelineHtml;
+
+      document.getElementById('modal-type-armada').textContent = item.typeArmada || '-';
+      document.getElementById('modal-vendor').textContent = item.vendor || '-';
+      document.getElementById('modal-no-armada').textContent = item.noArmada || '-';
+
+      const modalPl = document.getElementById('modal-packing-list');
+      if (item.packingList && item.packingList.startsWith('http')) {
+        modalPl.innerHTML = `<a href="${item.packingList}" target="_blank" rel="noopener noreferrer" class="link-btn">Buka Link Dokumen &nearr;</a>`;
+      } else {
+        modalPl.textContent = '-';
+      }
+
+      document.getElementById('modal-transit-time').textContent = item.transitDays !== null ? `${item.transitDays} Hari` : '-';
+      document.getElementById('modal-cycle-time').textContent = item.cycleDays !== null ? `${item.cycleDays} Hari` : '-';
+
+      document.getElementById('modal-detail').classList.add('open');
+    };
+
+    function closeModal() {
+      document.getElementById('modal-detail').classList.remove('open');
+    }
+
+    // --- EXPORT FILTERED CSV ---
+    function exportFilteredCSV() {
+      const items = state.filteredShipments;
+      if (items.length === 0) {
+        alert('Tidak ada data untuk diekspor!');
+        return;
+      }
+
+      const headers = [
+        'NO',
+        'NO LC',
+        'TYPE ARMADA',
+        'REQUEST DATE PICK UP',
+        'VENDOR',
+        'NO ARMADA',
+        'ACTUAL DELIV DATE KENDAL -> AHI SDA',
+        'ACTUAL ARRIVE DATE AT AHI SDA',
+        'PACKING LIST',
+        'ACTUAL FINISH UNLOADING',
+        'STATUS',
+        'OVERDUE',
+        'TRANSIT TIME (HARI)',
+        'CYCLE TIME (HARI)'
+      ];
+
+      const rows = items.map(i => [
+        i.no,
+        `"${(i.noLc || '').replace(/"/g, '""')}"`,
+        `"${(i.typeArmada || '').replace(/"/g, '""')}"`,
+        `"${formatDate(i.requestDate)}"`,
+        `"${(i.vendor || '').replace(/"/g, '""')}"`,
+        `"${(i.noArmada || '').replace(/"/g, '""')}"`,
+        `"${formatDate(i.actualDelivDate)}"`,
+        `"${formatDate(i.actualArriveDate)}"`,
+        `"${(i.packingList || '').replace(/"/g, '""')}"`,
+        `"${formatDate(i.actualFinishUnloading)}"`,
+        `"${i.status.label}"`,
+        i.isOverdue ? 'YES' : 'NO',
+        i.transitDays !== null ? i.transitDays : '',
+        i.cycleDays !== null ? i.cycleDays : ''
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const nowStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Monitoring_Delivery_Rack_DDR_AHI_Sidoarjo_${nowStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // --- EVENT LISTENERS & SETUP ---
+    function setupEventListeners() {
+      // Enter Dashboard from Splash Screen
+      const btnEnter = document.getElementById('btn-enter-dash');
+      if (btnEnter) {
+        btnEnter.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideSplashScreen();
+        });
+      }
+
+      // Clicking backdrop also closes splash
+      const splashScreen = document.getElementById('azko-splash-screen');
+      if (splashScreen) {
+        splashScreen.addEventListener('click', hideSplashScreen);
+      }
+
+
+      // Sidebar brand section click also triggers splash
+      const sidebarBrand = document.getElementById('btn-sidebar-brand');
+      if (sidebarBrand) {
+        sidebarBrand.addEventListener('click', () => {
+          showSplashScreen();
+          startSplashCountdown();
+        });
+      }
+
+      // Refresh buttons
+      document.getElementById('btn-refresh').addEventListener('click', () => fetchGoogleSheetsData());
+      document.getElementById('btn-retry-fetch').addEventListener('click', () => fetchGoogleSheetsData());
+      document.getElementById('btn-load-fallback').addEventListener('click', async () => {
+        try {
+          const resp = await fetch(CONFIG.LOCAL_URL);
+          if (resp.ok) {
+            const text = await resp.text();
+            const parsed = parseCSV(text);
+            state.rawData = parsed;
+            state.shipments = normalizeRows(parsed);
+            state.lastUpdated = new Date();
+            document.getElementById('last-updated-text').textContent = 'Update: ' + formatTime(state.lastUpdated);
+            document.getElementById('header-source-status').textContent = 'Snapshot Terakhir';
+            document.getElementById('error-container').style.display = 'none';
+            populateFilterOptions();
+            applyFiltersAndRender();
+          }
+        } catch (e) {
+          alert('Gagal memuat file lokal: ' + e.message);
+        }
+      });
+
+      // Dark / Light Theme Toggle
+      const themeBtn = document.getElementById('btn-theme-toggle');
+      themeBtn.addEventListener('click', () => {
+        const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
+        state.theme = nextTheme;
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        localStorage.setItem('ahi_theme', nextTheme);
+        updateCharts();
+      });
+
+      // Mobile Menu Toggle
+      const sidebar = document.getElementById('sidebar');
+      document.getElementById('btn-toggle-menu').addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+
+      // Sidebar Navigation Navigation Switch
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const targetId = btn.getAttribute('data-target');
+          const targetEl = document.getElementById(targetId);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth' });
+          }
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+          }
+        });
+      });
+
+      // Filters
+      document.getElementById('input-search').addEventListener('input', (e) => {
+        state.filters.search = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('filter-status').addEventListener('change', (e) => {
+        state.filters.status = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('filter-vendor').addEventListener('change', (e) => {
+        state.filters.vendor = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('filter-type').addEventListener('change', (e) => {
+        state.filters.typeArmada = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('filter-date-from').addEventListener('change', (e) => {
+        state.filters.dateFrom = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('filter-date-to').addEventListener('change', (e) => {
+        state.filters.dateTo = e.target.value;
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        document.getElementById('input-search').value = '';
+        document.getElementById('filter-status').value = 'ALL';
+        document.getElementById('filter-vendor').value = 'ALL';
+        document.getElementById('filter-type').value = 'ALL';
+        document.getElementById('filter-date-from').value = '';
+        document.getElementById('filter-date-to').value = '';
+
+        state.filters = {
+          search: '',
+          status: 'ALL',
+          vendor: 'ALL',
+          typeArmada: 'ALL',
+          dateFrom: '',
+          dateTo: '',
+        };
+        state.pagination.page = 1;
+        applyFiltersAndRender();
+      });
+
+      // Table Header Sorting
+      document.querySelectorAll('#main-table th[data-col]').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.getAttribute('data-col');
+          if (state.sort.column === col) {
+            state.sort.direction = state.sort.direction === 'asc' ? 'desc' : 'asc';
+          } else {
+            state.sort.column = col;
+            state.sort.direction = 'asc';
+          }
+
+          document.querySelectorAll('#main-table th .sort-icon').forEach(icon => {
+            icon.textContent = '↕';
+          });
+          const activeIcon = th.querySelector('.sort-icon');
+          if (activeIcon) {
+            activeIcon.textContent = state.sort.direction === 'asc' ? '▲' : '▼';
+          }
+
+          applyFiltersAndRender();
+        });
+      });
+
+      // Pagination
+      document.getElementById('select-page-size').addEventListener('change', (e) => {
+        state.pagination.pageSize = parseInt(e.target.value, 10);
+        state.pagination.page = 1;
+        renderTable();
+      });
+
+      document.getElementById('btn-prev-page').addEventListener('click', () => {
+        if (state.pagination.page > 1) {
+          state.pagination.page--;
+          renderTable();
+        }
+      });
+
+      document.getElementById('btn-next-page').addEventListener('click', () => {
+        const totalPages = Math.ceil(state.filteredShipments.length / state.pagination.pageSize);
+        if (state.pagination.page < totalPages) {
+          state.pagination.page++;
+          renderTable();
+        }
+      });
+
+      // Export CSV
+      document.getElementById('btn-export-csv').addEventListener('click', exportFilteredCSV);
+
+      // Modal Close
+      document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+      document.getElementById('modal-detail').addEventListener('click', (e) => {
+        if (e.target.id === 'modal-detail') closeModal();
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+    }
+
+    // --- INITIALIZATION ---
+    function initApp() {
+      document.documentElement.setAttribute('data-theme', state.theme);
+
+      setupEventListeners();
+
+      fetchGoogleSheetsData();
+
+      // Start the animated splash countdown
+      startSplashCountdown();
+
+      state.autoRefreshTimer = setInterval(() => {
+        fetchGoogleSheetsData();
+      }, CONFIG.REFRESH_INTERVAL_MS);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
