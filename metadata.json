@@ -1,0 +1,6 @@
+{
+  "name": "Monitoring Delivery Rack DDR - AHI Sidoarjo",
+  "description": "Dashboard monitoring logistik dan pengiriman Delivery Rack DDR - AHI Sidoarjo dari Google Sheets secara real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
